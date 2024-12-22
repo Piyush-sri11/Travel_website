@@ -16,6 +16,7 @@
     "first_name": "John",
     "last_name": "Doe"
 }
+```
 
 **Endpoint:** `/login/`
 
@@ -29,6 +30,7 @@
     "email": "user@example.com",
     "password": "password123",
 }
+```
 
 **Response Body:**
 ```json
@@ -37,7 +39,7 @@
     "refresh": "string token",
     "access": "string token"
 }
-
+```
 **Endpoint:** `/trip/`
 
 **Method:** `GET`
@@ -49,7 +51,7 @@
 {
     
 }
-
+```
 **Response Body:**
 ```json
 {
@@ -88,4 +90,4 @@
                 }
     ]
 }
-
+```
