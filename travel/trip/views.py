@@ -81,7 +81,7 @@ class RegisterAsOrganizerView(APIView):
         user = request.user
         user.is_organizer = True
         user.save()
-        return Response({'message': 'You are now registered as an organizer'})
+        return Response({'message': 'You are now registered as an organizer'},status=status.HTTP_200_OK)
         
 
 class TripOrganizerRegistrationView(APIView):
@@ -185,7 +185,7 @@ class CartViewSet(APIView):
         serializer = CartItemSerializer(data=cart_item_data)
         if serializer.is_valid():
             cart_item = serializer.save()
-            return Response({"cart_item_id": cart_item.id}, status=status.HTTP_201_CREATED)
+            return Response({"message":"Trip added to cart successfully","cart_item_id": cart_item.id}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
