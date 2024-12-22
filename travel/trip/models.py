@@ -56,9 +56,15 @@ class Trip(models.Model):
     
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE)
     persons = models.PositiveIntegerField(default=1,null=False, blank=False)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.trip.name + ' - ' + self.cart.user.first_name + ' - ' + str(self.persons) + ' persons'
 
 
 class Booking(models.Model):
@@ -72,7 +78,7 @@ class Booking(models.Model):
     
 
     def __str__(self):
-        return self.trip.name + ' - ' + self.user.username
+        return self.trip.name + ' - ' + self.user.first_name +" "+ self.user.last_name 
     
 class Payment(models.Model):
     booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='payment')

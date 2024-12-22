@@ -33,7 +33,7 @@ class LoginSerializer(serializers.Serializer):
 class TripOrganizerRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'password', 'email', 'is_organizer']
+        fields = ['email', 'password', 'first_name', 'last_name',"is_organizer"]
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -89,41 +89,32 @@ class TripDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['organizer', 'name', 'description', 'start_date', 'end_date', 'price', 'total_slots', 'available_slots', 'cancellation_policy']
 
-class CartSerializer(serializers.ModelSerializer):
+
+from .models import Cart, CartItem
+
+class CartItemSerializer(serializers.ModelSerializer):
     trip_name = serializers.CharField(source='trip.name', read_only=True)
-    
+
     class Meta:
-        model = Cart
+        model = CartItem
         fields = '__all__'
-        extra_fields = ['trip_name']
 
     def validate_persons(self, persons):
         if persons <= 0:
             raise serializers.ValidationError("Persons should be greater than 0")
         return persons
-    
-    def create(self, validated_data):
-        trip = validated_data.get('trip')
-        if trip.available_slots < validated_data.get('persons'):
-            raise serializers.ValidationError("Not enough available slots")
-        cart = Cart.objects.create(**validated_data)
-        # trip.available_slots -= validated_data.get('persons')
-        # trip.save()
-        return cart
-    
-    def update(self, instance, validated_data):
-        trip = instance.trip
-        if trip.available_slots + instance.persons < validated_data.get('persons'):
-            raise serializers.ValidationError("Not enough available slots")
-        # trip.available_slots += instance.persons
-        # trip.available_slots -= validated_data.get('persons')
-        # trip.save()
-        instance.persons = validated_data.get('persons', instance.persons)
-        instance.total_price = validated_data.get('total_price', instance.total_price)
-        instance.save()
-        return instance
-    
 
+    def create(self, validated_data):
+        validated_data['total_price'] = validated_data['persons'] * validated_data['trip'].price
+        cart_item = CartItem.objects.create(**validated_data)
+        return cart_item
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = '__all__'
     
         
 

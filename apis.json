@@ -1,0 +1,248 @@
+
+{
+    "url":"/register/",
+"method":"POST",
+"request": {
+    "headers": {
+        // "Authorization": "Bearer token",
+        "Content-Type": "application/json"
+    },
+    "data": {
+        "first_name": "string",//required
+        "last_name": "string",//required
+        "password": "string",//required
+        "email": "string"//required
+    }
+},
+"response": {
+    "status": 201,
+    "data": {
+        "user_id": 6
+    }
+}
+}
+
+{
+    "url":"/login/",
+"method":"POST",
+"request": {
+    "headers": {
+        // "Authorization":
+        "Content-Type": "application/json"
+    },
+    "data": {
+        "email": "string",//required
+        "password": "string"//required
+    }
+},
+"response": {
+    "status": 200,
+    "data":{
+        "message": "Login successful",
+        "refresh": "token",
+        "access": "token"
+    }
+}
+}
+
+{
+    "url":"/logout/",
+    "method":"POST",
+    "request": {
+        "headers": {
+            "Authorization":"Bearer token",
+            "Content-Type": "application/json"
+        },
+    },
+    {
+        "response": {
+            "status": 200,
+            "data": {
+                "message": "Logout successful"
+            }
+        }
+    }
+}
+
+{
+    "url":"/trip/",
+    "method": "GET",
+    "request": {
+        "headers": {
+            "Content-Type": "application/json"
+        },
+    },
+    "response": {
+        "status": 200,
+        "data": {
+            [
+                {
+                    "id": 1,
+                    "organizer": {
+                        "id": 2,
+                        "first_name": "Johny",
+                        "last_name": "Walker"
+                    },
+                    "name": "Kasol",
+                    "description": "Brownie",
+                    "start_date": "2025-01-01",
+                    "end_date": "2025-01-10",
+                    "price": "3999.99",
+                    "total_slots": 12,
+                    "available_slots": 6,
+                    "cancellation_policy": ""
+                },
+                {
+                    "id": 3,
+                    "organizer": {
+                        "id": 2,
+                        "first_name": "Johny",
+                        "last_name": "Walker"
+                    },
+                    "name": "Jaipur",
+                    "description": "Padharo mhare desh",
+                    "start_date": "2025-02-10",
+                    "end_date": "2025-02-15",
+                    "price": "2999.99",
+                    "total_slots": 12,
+                    "available_slots": 12,
+                    "cancellation_policy": ""
+                },
+                {
+                    "id": 4,
+                    "organizer": {
+                        "id": 2,
+                        "first_name": "Johny",
+                        "last_name": "Walker"
+                    },
+                    "name": "Ayodhya",
+                    "description": "Jay Shree Ram",
+                    "start_date": "2025-01-15",
+                    "end_date": "2025-01-20",
+                    "price": "4999.99",
+                    "total_slots": 15,
+                    "available_slots": 12,
+                    "cancellation_policy": ""
+                }
+            ]
+        }
+    }
+
+}
+
+{
+    "url": "/cart/",
+    "method": "POST",
+    "request": {
+        "headers": {
+            "Authorization": "Bearer token",
+            "Content-Type": "application/json"
+        },
+        "data": {
+            "trip_id": 1,//required
+            "persons": 2,//required
+        }
+    },
+    "response": {
+        "status": 201,
+        "data": {
+                "cart_item_id": 4
+        }
+    }
+}
+
+{
+    "url": "/cart/",
+    "method": "GET",
+    "request": {
+        "headers": {
+            "Authorization":"Bearer token",
+            "Content-Type": "application/json"    
+        },
+    },
+    "response": {
+        "status": 200,
+        "data": {
+            "id": 2, //cart id
+            "items": [
+                {
+                    "id": 4, //cart item id
+                    "trip_name": "Jaipur",
+                    "persons": 1,
+                    "total_price": "2999.99",
+                    "cart": 2, //cart id
+                    "trip": 3 //trip id
+                },
+                {
+                    "id": 5, //cart item id
+                    "trip_name": "Ayodhya",
+                    "persons": 2,
+                    "total_price": "9999.98",
+                    "cart": 2, //cart id
+                    "trip": 4 //trip id
+                }
+            ],
+            "user": 6 //user id
+        }
+    }
+}
+
+{
+    "url": "/cart/",
+    "method": "DELETE",
+    "request": {
+        "headers": {
+            "Authorization":"Bearer token",
+            "Content-Type": "application/json"
+        },
+        "data": {
+            "id": 2 //required
+        }
+    },
+    "response": {
+        "status": 200,
+        "data": {
+            "message": "Cart item deleted successfully"
+        }
+    }
+}
+
+{
+    "url": "/cart/",
+    "method": "PATCH",
+    "request": {
+        "headers": {
+            "Authorization":"Bearer token",
+            "Content-Type": "application/json"
+        },
+        "data": {
+            "id": 2, //required
+            "persons": 3 //required
+
+        }
+    },
+    "response": {
+        "status": 200,
+        "data": {
+            "message": "Cart item updated successfully"
+        }
+    }
+}
+
+{
+    "url": "checkout",
+    "method": "POST",
+    "request": {
+        "headers": {
+            "Authorization":"Bearer token",
+            "Content-Type": "application/json"
+        },
+    },
+    "response": {
+        "status": 201,
+        "data": {
+            "message": "Booking successful"
+        }
+    }
+
+}

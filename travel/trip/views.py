@@ -8,11 +8,32 @@ from .models import CustomUser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework import status
+from django.utils import timezone
+from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
 # Create your views here.
 
 
 class RegisterViewSet(APIView):
+    """
+    A view that can accept POST requests with JSON content.
+    """
+
+    @extend_schema(request=CustomUserSerializer, responses={201: CustomUserSerializer})
     def post(self,request):
+        """
+        Create a new user
+
+        Input:
+        - email: string
+        - password: string
+        - first_name: string
+        - last_name: string
+        
+        Output:
+        - id: integer
+
+        """
         data=request.data
         serializer=CustomUserSerializer(data=data)
         if serializer.is_valid():
@@ -23,6 +44,8 @@ class RegisterViewSet(APIView):
     
 
 class LoginViewSet(APIView):
+
+    @extend_schema(request=LoginSerializer)
     def post(self,request):
         data=request.data
         serializer=LoginSerializer(data=data)
@@ -31,8 +54,12 @@ class LoginViewSet(APIView):
             password=serializer.validated_data.get('password')
             user=authenticate(email=email,password=password)
             if user:
-                token,created=Token.objects.get_or_create(user=user)
-                return Response({'message':'Login Successful','token':token.key}) #return token
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'message':'Login successful',
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                },status=status.HTTP_200_OK) #return token
             else:
                 return Response({'message':'Invalid Credentials'})
         else:
@@ -41,6 +68,7 @@ class LoginViewSet(APIView):
 class LogoutViewSet(APIView):
     permission_classes = [IsAuthenticated]
 
+    # @extend_schema(request=None, responses={200: None})
     def post(self, request):
         request.user.auth_token.delete()
         return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
@@ -48,6 +76,7 @@ class LogoutViewSet(APIView):
 class RegisterAsOrganizerView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=None, responses={200: None})
     def post(self, request):
         user = request.user
         user.is_organizer = True
@@ -56,6 +85,8 @@ class RegisterAsOrganizerView(APIView):
         
 
 class TripOrganizerRegistrationView(APIView):
+
+    @extend_schema(request=TripOrganizerRegistrationSerializer, responses={201: CustomUserSerializer})
     def post(self, request, *args, **kwargs):
         serializer = TripOrganizerRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -66,6 +97,7 @@ class TripOrganizerRegistrationView(APIView):
 class TripViewOrg(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=TripSerializer, responses={200: TripSerializer})
     def post(self, request):
         if not request.user.is_organizer:
             return Response({"detail": "Only organizers can add new trips."}, status=status.HTTP_403_FORBIDDEN)
@@ -79,7 +111,7 @@ class TripViewOrg(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
-    
+    @extend_schema(request=TripSerializer, responses={200: TripSerializer})
     def get(self,request):
         data=request.data
         id=data.get('id')
@@ -95,13 +127,14 @@ class TripViewOrg(APIView):
             serializer = TripSerializer(trips, many=True)
             return Response(serializer.data)
     
-          
+    @extend_schema(request=TripSerializer, responses={200: TripSerializer})
     def delete(self, request):
         id = request.data.get('id')
         trip = Trip.objects.get(id=id, organizer=request.user)
         trip.delete()
         return Response({"message": "Trip deleted successfully"}, status=status.HTTP_200_OK)
     
+    @extend_schema(request=TripSerializer, responses={200: TripSerializer})
     def patch(self, request):
         id = request.data.get('id')
         trip = Trip.objects.get(id=id, organizer=request.user)
@@ -119,64 +152,157 @@ from .models import Cart
 
 class TripViewSet(APIView):
         
+        @extend_schema(request=TripSerializer, responses={200: TripDetailSerializer})
         def get(self,request):
             #only show upcoming trips
             trips = Trip.objects.filter(start_date__gte=datetime.date.today())
             serializer = TripDetailSerializer(trips, many=True)
             return Response(serializer.data)
 
+
+from .models import Cart, CartItem, Trip
+from .serializer import CartSerializer, CartItemSerializer
+from .payment_service import PaymentService
+
 class CartViewSet(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=CartItemSerializer, responses={201: CartItemSerializer})
     def post(self, request):
         data = request.data
         # Check if id and persons are present in the request
         if 'id' not in data or 'persons' not in data:
             return Response({"message": "Please provide trip id and number of persons"}, status=status.HTTP_400_BAD_REQUEST)
 
-        data['user'] = request.user.id  # Pass the user id instead of the user instance
-        id = data.pop('id')
-        trip = Trip.objects.get(id=id)
-        data['trip'] = trip.id  # Pass the trip id instead of the trip instance
-        data['total_price'] = data['persons'] * trip.price
-        print("Request data:", data)
-        serializer = CartSerializer(data=data)
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        trip = Trip.objects.get(id=data['id'])
+        cart_item_data = {
+            'cart': cart.id,
+            'trip': trip.id,
+            'persons': data['persons'],
+            'total_price': data['persons'] * trip.price
+        }
+        serializer = CartItemSerializer(data=cart_item_data)
         if serializer.is_valid():
-            cart = serializer.save()
-            return Response({"cart_id": cart.id}, status=status.HTTP_201_CREATED)
+            cart_item = serializer.save()
+            return Response({"cart_item_id": cart_item.id}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    @extend_schema(request=None, responses={200: CartSerializer})
     def get(self, request):
-        carts = Cart.objects.filter(user=request.user)
-        print(carts)
-        serializer = CartSerializer(carts, many=True)
-        print(serializer.data)
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        serializer = CartSerializer(cart)
         return Response(serializer.data)
-    
+
+    @extend_schema(request=CartItemSerializer)
     def delete(self, request):
         id = request.data.get('id')
-        cart = Cart.objects.get(id=id, user=request.user)
-        cart.delete()
-        return Response({"message": "Cart deleted successfully"}, status=status.HTTP_200_OK)
+        cart_item = CartItem.objects.get(id=id, cart__user=request.user)
+        cart_item.delete()
+        return Response({"message": "Cart item deleted successfully"}, status=status.HTTP_200_OK)
     
+    @extend_schema(request=CartItemSerializer)
     def patch(self, request):
         id = request.data.get('id')
-        cart = Cart.objects.get(id=id, user=request.user)
+        cart_item = CartItem.objects.get(id=id, cart__user=request.user)
         data = request.data
-        serializer = CartSerializer(cart, data=data, partial=True)
+        data['total_price'] = data['persons'] * cart_item.trip.price
+        serializer = CartItemSerializer(cart_item, data=data, partial=True)
         if serializer.is_valid():
-            cart = serializer.save()
-            return Response({"cart_id": cart.id}, status=status.HTTP_200_OK)
+            cart_item = serializer.save()
+            return Response({"message": "Cart item updated successfully"}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class CheckoutViewSet(APIView):
+    permission_classes = [IsAuthenticated]
 
-class BookingViewSet(APIView):
+    @extend_schema(request=None, responses={200: None})
+    def post(self, request):
+        cart, created = Cart.objects.get_or_create(user=request.user)
+        cart_items = CartItem.objects.filter(cart=cart)
+        if not cart_items.exists():
+            return Response({"message": "No items in cart"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        payment_service = PaymentService()
+        # Create a booking for each cart item
+        for item in cart_items:
+            trip=item.trip
+            
+            current_date = timezone.now().date()
+            
+            # Check if current date is before the trip start date
+            if current_date >= trip.start_date:
+                item.delete()
+                return Response({"message": f"Cannot book trip {trip.name} as it has already started."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if item.persons > trip.available_slots:
+                return Response({"message": "Not enough available slots for trip. Reduce persons or delete the trip" + trip.name}, status=status.HTTP_400_BAD_REQUEST)
+            booking = Booking.objects.create(
+                trip=item.trip,
+                user=request.user,
+                total_persons=item.persons,
+                total_price=item.total_price,
+                status='CONFIRMED'
+            )
+            # Process payment
+            payment = payment_service.process_payment(booking, item.total_price)
+            
+            if payment.payment_status == 'SUCCESS':
+                trip.available_slots -= item.persons
+                trip.save()
+                item.delete()
+            else:
+                booking.delete()
+                return Response({"message": "Payment failed for trip " + trip.name}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({"message": "Booking successful for trip to " + trip.name}, status=status.HTTP_200_OK)
+
+class CancelBookingViewSet(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=BookingSerializer, responses={200: None})
+    def post(self, request):
+        booking_id = request.data.get('booking_id')
+        booking = Booking.objects.get(id=booking_id, user=request.user)
+        trip = booking.trip
+        current_date = timezone.now().date()
+        if current_date >= trip.start_date:
+            return Response({"message": "Cannot cancel booking as trip has already started"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        trip_date = trip.start_date
+        current_date = timezone.now().date()
+        days_to_trip = (trip_date - current_date).days
+
+        if days_to_trip >= 15:
+            refund_amount = booking.total_price
+        elif 7 <= days_to_trip < 15:
+            refund_amount = booking.total_price * 0.5
+        else:
+            refund_amount = 0
+
+        booking.status = 'CANCELLED'
+        booking.refund_amount = refund_amount
+        booking.save()
+        trip.available_slots += booking.total_persons
+        trip.save()
+        payment_service = PaymentService()
+        payment_service.process_refund(booking, refund_amount)
+        
+        return Response({"message": "Booking cancelled successfully"}, status=status.HTTP_200_OK)
     
-    def get(self,request,id):
-        queryset = Booking.objects.filter(trip=id)
-        serializer = BookingSerializer(queryset, many=True)
+class ViewBookingViewSet(APIView):
+    permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=BookingSerializer, responses={200: BookingSerializer})
+    def get(self, request):
+        id=request.data.get('booking_id')
+        if id:
+            booking = Booking.objects.get(id=id, user=request.user)
+            serializer = BookingSerializer(booking)
+            return Response(serializer.data)
+        bookings = Booking.objects.filter(user=request.user)
+        serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data)
