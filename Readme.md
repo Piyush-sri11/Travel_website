@@ -49,12 +49,6 @@ This project is a travel itinerary platform that offers curated travel experienc
    python manage.py runserver
    ```
 
-## Testing
-
-1. Run tests using `pytest`:
-   ```bash
-   pytest
-   ```
 
 # Frontend
 
