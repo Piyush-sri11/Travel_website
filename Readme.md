@@ -16,15 +16,11 @@ This project is a travel itinerary platform that offers curated travel experienc
    ```bash
    git clone https://github.com/Piyush-sri11/Travel_website.git
    ```
-2. Navigate to the backend directory:
-   ```bash
-   cd travel
-   ```
-3. Set up a virtual environment:
+2. Set up a virtual environment:
    ```bash
    python -m venv venv
    ```
-4. Activate the virtual environment:
+3. Activate the virtual environment:
    - On Windows:
      ```bash
      venv\Scripts\activate
@@ -33,18 +29,22 @@ This project is a travel itinerary platform that offers curated travel experienc
      ```bash
      source venv/bin/activate
      ```
-5. Install dependencies:
+4. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
 # Running the Server
 
-1. Apply database migrations:
+1. Navigate to the backend directory:
+   ```bash
+   cd travel
+   ```
+2. Apply database migrations:
    ```bash
    python manage.py migrate
    ```
-2. Start the development server:
+3. Start the development server:
    ```bash
    python manage.py runserver
    ```
@@ -69,27 +69,24 @@ This project is a travel itinerary platform that offers curated travel experienc
 - Display of upcoming popular explorations with details such as title, tags, info, price, curator, and available spots.
 - Responsive design with Tailwind CSS.
 
-## Installation
+## Running
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-repo.git
-   ```
-2. Navigate to the frontend directory:
+1. Navigate to the frontend directory:
    ```bash
    cd frontend
    ```
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
-4. Start the development server:
+3. Start the development server:
    ```bash
    npm start
    ```
 
 ## Usage
 
+- Ensure backend is running
 - Navigate to `http://localhost:3000` to view the application.
 
 
