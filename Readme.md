@@ -1,3 +1,98 @@
+# Backend
+
+## Project Overview
+
+This project is a travel itinerary platform that offers curated travel experiences designed by influencers. The backend is built using Django and Django REST framework.
+
+## Features
+
+- API endpoints for user registration, login, trip viewing, cart management, and checkout.
+- Integration with a database to store and retrieve travel data.
+- Authentication and authorization for user accounts.
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-repo.git
+   ```
+2. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+3. Set up a virtual environment:
+   ```bash
+   python -m venv venv
+   ```
+4. Activate the virtual environment:
+   - On Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+5. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+# Running the Server
+
+1. Apply database migrations:
+   ```bash
+   python manage.py migrate
+   ```
+2. Start the development server:
+   ```bash
+   python manage.py runserver
+   ```
+
+## Testing
+
+1. Run tests using `pytest`:
+   ```bash
+   pytest
+   ```
+
+# Frontend
+
+## Project Overview
+
+This project is a travel itinerary platform that offers curated travel experiences designed by influencers. The frontend is built using React and Tailwind CSS.
+
+## Features
+
+- Navigation bar with links to Home, Dashboard, Cart, Login, and Register.
+- Header section with a background image and search input.
+- Display of upcoming popular explorations with details such as title, tags, info, price, curator, and available spots.
+- Responsive design with Tailwind CSS.
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-repo.git
+   ```
+2. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm start
+   ```
+
+## Usage
+
+- Navigate to `http://localhost:3000` to view the application.
+
+
 ## API Documentation
 
 ### Register a New User
