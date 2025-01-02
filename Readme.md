@@ -14,11 +14,11 @@ This project is a travel itinerary platform that offers curated travel experienc
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo.git
+   git clone https://github.com/Piyush-sri11/Travel_website.git
    ```
 2. Navigate to the backend directory:
    ```bash
-   cd backend
+   cd travel
    ```
 3. Set up a virtual environment:
    ```bash
